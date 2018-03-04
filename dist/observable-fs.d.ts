@@ -1,0 +1,13 @@
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/bindCallback';
+import 'rxjs/add/observable/bindNodeCallback';
+import 'rxjs/add/observable/from';
+import 'rxjs/add/operator/switchMap';
+export declare const readLinesObs: (v1: string) => Observable<string[]>;
+export declare function writeFileObs(filePath: string, lines: Array<string>): Observable<string>;
+export declare function fileListObs(fromDirPath: string): Observable<string[]>;
+export declare function filesObs(fromDirPath: string): Observable<string>;
+export declare function deleteDirObs(dirPath: string): Observable<Error>;
+export declare function makeDirObs(dirPath: string): Observable<{}>;
+export declare function appendFileObs(filePath: string, line: string): Observable<string>;
+export declare function deleteFileObs(filePath: string): Observable<string>;
