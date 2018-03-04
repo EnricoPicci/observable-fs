@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Observable_1 = require("rxjs/Observable");
-require("rxjs/add/observable/bindCallback");
 require("rxjs/add/observable/bindNodeCallback");
+require("rxjs/add/observable/bindCallback");
 require("rxjs/add/observable/from");
 require("rxjs/add/operator/switchMap");
 const fs = require("fs");
@@ -68,11 +68,21 @@ function filesObs(fromDirPath) {
 exports.filesObs = filesObs;
 // ============  Deletes a directory and subdirectories and emits when completed =========
 // returns and Observable which emits null when the directory and all its subdirectories have been deleted or an error otherwise
+// export function deleteDirObs(dirPath: string) {
+//     return _rimraf(dirPath);
+// }
+// const _rimraf = Observable.bindCallback(rimraf);
 function deleteDirObs(dirPath) {
-    return _rimraf(dirPath);
+    return Observable_1.Observable.create((observer) => {
+        rimraf(dirPath, (err) => {
+            if (err)
+                observer.error(err);
+            observer.next(dirPath);
+            observer.complete();
+        });
+    });
 }
 exports.deleteDirObs = deleteDirObs;
-const _rimraf = Observable_1.Observable.bindCallback(rimraf);
 // ============  Creates a directory and emits when completed =========
 // returns and Observable which emits the name of the directory when the directory has been created or an error otherwise
 function makeDirObs(dirPath) {

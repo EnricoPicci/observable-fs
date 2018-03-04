@@ -1,7 +1,7 @@
 
 
 import 'mocha';
-import * as rimraf from 'rimraf';
+// import * as rimraf from 'rimraf';
 import * as _ from 'lodash';
 
 import 'rxjs/add/operator/do';
@@ -16,7 +16,8 @@ describe('filesObs function', () => {
     it('reads the files of a directory', done => {
         const files = new Array<string>();
         const dirPath = 'observable-fs-test-dir/';
-        filesObs(dirPath).subscribe(
+        filesObs(dirPath)
+        .subscribe(
             file => files.push(file),
             err => {
                 console.error('ERROR', err);
@@ -39,7 +40,8 @@ describe('readLinesObs function', () => {
     
     it('reads all the lines of a file', done => {
         const filePath = 'observable-fs-test-dir/dir-2/file-2-1.txt';
-        readLinesObs(filePath).subscribe(
+        readLinesObs(filePath)
+        .subscribe(
             lines => {
                 console.log('lines', lines);
                 if (lines.length !== 5) {
@@ -61,48 +63,44 @@ describe('readLinesObs function', () => {
 describe('writeFileObs function', () => {
     
     it('writes a file with a certain content', done => {
-        const filePathDir = 'observable-fs-test-dir-output/';
+        const dirPath = 'observable-fs-test-dir-output/';
         const fileName = 'file-w.txt';
+        const fullFileName = dirPath + fileName;
         const content = [
             'first line',
             'second line'
         ];
         // delete the target directory if it exists
-        rimraf(filePathDir, err => {
-            if (err) {
-                console.error('code', err.name);
-                console.error('err', err);
-                return done(err);
+        deleteDirObs(dirPath)
+        // writes the file and then runs the checks
+        .switchMap(deletedDir => writeFileObs(deletedDir + fileName, content))
+         // checks that the file name is emitted
+        .do(data => {
+            if (fullFileName !== data) {
+                console.error('data emitted', data);
+                console.error('fullFileName', dirPath + fileName);
+                return done(new Error('data emitted by write failed'));
             }
-            const fullFileName = filePathDir + fileName;
-            // writes the file and then runs the checks 
-            writeFileObs(fullFileName, content)
-                // checks that the file name is emitted
-                .do(data => {
-                    if (fullFileName !== data) {
-                        console.error('data emitted', data);
-                        console.error('fullFileName', fullFileName);
-                        return done(new Error('data emitted by write failed'));
-                        // throw 'data emitted by write failed';
-                    }
-                })
-                .switchMap(_filePath => filesObs(filePathDir))
-                // checks, via filesObs function, that a file with the expected name exists
-                .subscribe(filePath => {
-                    if (filePath !== fullFileName) {
-                        console.error('filePath', filePath);
-                        console.error('fullFileName', fullFileName);
-                        return done(new Error('write file failed'));
-                    }
-                    rimraf(filePathDir, err => {
-                        if (err) {
-                            console.error('err', err);
-                            return done(err);
-                        }
-                    });
-                    return done();
-                })
-        });
+        })
+        // checks, via filesObs function, that a file with the expected name exists
+        .switchMap(_filePath => filesObs(dirPath))
+        .do(filePath => {
+            if (filePath !== fullFileName) {
+                console.error('filePath', filePath);
+                console.error('fullFileName', fullFileName);
+                return done(new Error('write file failed'));
+            }
+        })
+        // removes the directory used for the test
+        .switchMap(_data => deleteDirObs(dirPath))
+        .subscribe(
+            null,
+            err => {
+                deleteDirObs(dirPath).subscribe();
+                done(err);
+            },
+            () => done()
+        )
 
     });
 
@@ -112,7 +110,8 @@ describe('makeDirObs function', () => {
     
     it('tries to create a directory - at the end it deletes the directory', done => {
         const dirName = 'new dir';
-        makeDirObs(dirName).subscribe(
+        makeDirObs(dirName)
+        .subscribe(
             data => {
                 const expectedData = process.cwd() + '/' + dirName;
                 if (data !== expectedData) {
@@ -132,23 +131,26 @@ describe('makeDirObs function', () => {
     it('tries to create a directory first and then the same directory - at the end it deletes the directory', done => {
         const dirName = 'another new dir';
         makeDirObs(dirName)
-        .switchMap(data => {
-            const expectedData = process.cwd() + '/' + dirName;
-            if (data !== expectedData) {
-                console.error('expectedData', expectedData);
+        // checks that the data received is equal to the name of the directory created
+        .do(data => {
+            const expectedDirPath = process.cwd() + '/' + dirName;
+            if (data !== expectedDirPath) {
+                console.error('expectedData', expectedDirPath);
                 console.error('data', data);
                 throw Error('data not as expected ');
             }
-            return makeDirObs(dirName);
+        })
+        .switchMap(_data => makeDirObs(dirName))
+        // checks that the data received is null, since this signals that the directory we tried to create already existis
+        .do(data => {
+            if (data) {
+                console.error('expectedData', null);
+                console.error('data', data);
+                throw Error('data not as expected ');
+            }
         })
         .subscribe(
-            data => {
-                if (data) {
-                    console.error('expectedData', null);
-                    console.error('data', data);
-                    throw Error('data not as expected ');
-                }
-            },
+            null,
             err => {
                 deleteDirObs(dirName).subscribe();
                 done(err);

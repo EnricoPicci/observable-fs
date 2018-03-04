@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require("mocha");
-const rimraf = require("rimraf");
+// import * as rimraf from 'rimraf';
 const _ = require("lodash");
 require("rxjs/add/operator/do");
 const observable_fs_1 = require("./observable-fs");
@@ -11,7 +11,8 @@ describe('filesObs function', () => {
     it('reads the files of a directory', done => {
         const files = new Array();
         const dirPath = 'observable-fs-test-dir/';
-        observable_fs_1.filesObs(dirPath).subscribe(file => files.push(file), err => {
+        observable_fs_1.filesObs(dirPath)
+            .subscribe(file => files.push(file), err => {
             console.error('ERROR', err);
         }, () => {
             console.log('files', files);
@@ -26,7 +27,8 @@ describe('filesObs function', () => {
 describe('readLinesObs function', () => {
     it('reads all the lines of a file', done => {
         const filePath = 'observable-fs-test-dir/dir-2/file-2-1.txt';
-        observable_fs_1.readLinesObs(filePath).subscribe(lines => {
+        observable_fs_1.readLinesObs(filePath)
+            .subscribe(lines => {
             console.log('lines', lines);
             if (lines.length !== 5) {
                 console.error(filePath, lines);
@@ -40,52 +42,43 @@ describe('readLinesObs function', () => {
 });
 describe('writeFileObs function', () => {
     it('writes a file with a certain content', done => {
-        const filePathDir = 'observable-fs-test-dir-output/';
+        const dirPath = 'observable-fs-test-dir-output/';
         const fileName = 'file-w.txt';
+        const fullFileName = dirPath + fileName;
         const content = [
             'first line',
             'second line'
         ];
         // delete the target directory if it exists
-        rimraf(filePathDir, err => {
-            if (err) {
-                console.error('code', err.name);
-                console.error('err', err);
-                return done(err);
+        observable_fs_1.deleteDirObs(dirPath)
+            .switchMap(deletedDir => observable_fs_1.writeFileObs(deletedDir + fileName, content))
+            .do(data => {
+            if (fullFileName !== data) {
+                console.error('data emitted', data);
+                console.error('fullFileName', dirPath + fileName);
+                return done(new Error('data emitted by write failed'));
             }
-            const fullFileName = filePathDir + fileName;
-            // writes the file and then runs the checks 
-            observable_fs_1.writeFileObs(fullFileName, content)
-                .do(data => {
-                if (fullFileName !== data) {
-                    console.error('data emitted', data);
-                    console.error('fullFileName', fullFileName);
-                    return done(new Error('data emitted by write failed'));
-                    // throw 'data emitted by write failed';
-                }
-            })
-                .switchMap(_filePath => observable_fs_1.filesObs(filePathDir))
-                .subscribe(filePath => {
-                if (filePath !== fullFileName) {
-                    console.error('filePath', filePath);
-                    console.error('fullFileName', fullFileName);
-                    return done(new Error('write file failed'));
-                }
-                rimraf(filePathDir, err => {
-                    if (err) {
-                        console.error('err', err);
-                        return done(err);
-                    }
-                });
-                return done();
-            });
-        });
+        })
+            .switchMap(_filePath => observable_fs_1.filesObs(dirPath))
+            .do(filePath => {
+            if (filePath !== fullFileName) {
+                console.error('filePath', filePath);
+                console.error('fullFileName', fullFileName);
+                return done(new Error('write file failed'));
+            }
+        })
+            .switchMap(_data => observable_fs_1.deleteDirObs(dirPath))
+            .subscribe(null, err => {
+            observable_fs_1.deleteDirObs(dirPath).subscribe();
+            done(err);
+        }, () => done());
     });
 });
 describe('makeDirObs function', () => {
     it('tries to create a directory - at the end it deletes the directory', done => {
         const dirName = 'new dir';
-        observable_fs_1.makeDirObs(dirName).subscribe(data => {
+        observable_fs_1.makeDirObs(dirName)
+            .subscribe(data => {
             const expectedData = process.cwd() + '/' + dirName;
             if (data !== expectedData) {
                 console.error('expectedData', expectedData);
@@ -100,22 +93,23 @@ describe('makeDirObs function', () => {
     it('tries to create a directory first and then the same directory - at the end it deletes the directory', done => {
         const dirName = 'another new dir';
         observable_fs_1.makeDirObs(dirName)
-            .switchMap(data => {
-            const expectedData = process.cwd() + '/' + dirName;
-            if (data !== expectedData) {
-                console.error('expectedData', expectedData);
+            .do(data => {
+            const expectedDirPath = process.cwd() + '/' + dirName;
+            if (data !== expectedDirPath) {
+                console.error('expectedData', expectedDirPath);
                 console.error('data', data);
                 throw Error('data not as expected ');
             }
-            return observable_fs_1.makeDirObs(dirName);
         })
-            .subscribe(data => {
+            .switchMap(_data => observable_fs_1.makeDirObs(dirName))
+            .do(data => {
             if (data) {
                 console.error('expectedData', null);
                 console.error('data', data);
                 throw Error('data not as expected ');
             }
-        }, err => {
+        })
+            .subscribe(null, err => {
             observable_fs_1.deleteDirObs(dirName).subscribe();
             done(err);
         }, () => {

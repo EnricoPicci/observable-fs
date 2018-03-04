@@ -1,7 +1,9 @@
 
 import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/bindCallback';
+import { Observer} from 'rxjs/Observer';
+import {TeardownLogic} from 'rxjs/Subscription';
 import 'rxjs/add/observable/bindNodeCallback';
+import 'rxjs/add/observable/bindCallback';
 import 'rxjs/add/observable/from';
 import 'rxjs/add/operator/switchMap';
 
@@ -75,10 +77,19 @@ export function filesObs(fromDirPath: string) {
 
 // ============  Deletes a directory and subdirectories and emits when completed =========
 // returns and Observable which emits null when the directory and all its subdirectories have been deleted or an error otherwise
-export function deleteDirObs(dirPath: string) {
-    return _rimraf(dirPath);
+// export function deleteDirObs(dirPath: string) {
+//     return _rimraf(dirPath);
+// }
+// const _rimraf = Observable.bindCallback(rimraf);
+export function deleteDirObs(dirPath: string): Observable<string> {
+    return Observable.create((observer: Observer<string>): TeardownLogic => {
+        rimraf(dirPath, (err) => {
+            if(err) observer.error(err);
+            observer.next(dirPath);
+            observer.complete();
+        })
+    })
 }
-const _rimraf = Observable.bindCallback(rimraf);
 
 // ============  Creates a directory and emits when completed =========
 // returns and Observable which emits the name of the directory when the directory has been created or an error otherwise
