@@ -1,0 +1,1 @@
+{"version":3,"file":"environment.prod.js","sourceRoot":"","sources":["../../src/set-version-timestamp/environment.prod.ts"],"names":[],"mappings":";;AACa,QAAA,WAAW,GAAG;IAC3B,OAAO,EAAE,OAAO;IAChB,cAAc,EAAE,UAAU;IACtB,UAAU,EAAE,IAAI;CACnB,CAAC"}
