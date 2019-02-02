@@ -1,10 +1,8 @@
 
-
 import 'mocha';
-// import * as rimraf from 'rimraf';
 import * as _ from 'lodash';
 
-import 'rxjs/add/operator/do';
+import {switchMap, tap} from 'rxjs/operators';
 
 import {readLinesObs, writeFileObs, filesObs, makeDirObs, deleteDirObs} from './observable-fs';
 import {appendFileObs} from './observable-fs';
@@ -72,27 +70,29 @@ describe('writeFileObs function', () => {
         ];
         // delete the target directory if it exists
         deleteDirObs(dirPath)
-        // writes the file and then runs the checks
-        .switchMap(deletedDir => writeFileObs(deletedDir + fileName, content))
-         // checks that the file name is emitted
-        .do(data => {
-            if (fullFileName !== data) {
-                console.error('data emitted', data);
-                console.error('fullFileName', dirPath + fileName);
-                return done(new Error('data emitted by write failed'));
-            }
-        })
-        // checks, via filesObs function, that a file with the expected name exists
-        .switchMap(_filePath => filesObs(dirPath))
-        .do(filePath => {
-            if (filePath !== fullFileName) {
-                console.error('filePath', filePath);
-                console.error('fullFileName', fullFileName);
-                return done(new Error('write file failed'));
-            }
-        })
-        // removes the directory used for the test
-        .switchMap(_data => deleteDirObs(dirPath))
+        .pipe(
+            // writes the file and then runs the checks
+            switchMap(deletedDir => writeFileObs(deletedDir + fileName, content)),
+             // checks that the file name is emitted
+            tap(data => {
+                if (fullFileName !== data) {
+                    console.error('data emitted', data);
+                    console.error('fullFileName', dirPath + fileName);
+                    return done(new Error('data emitted by write failed'));
+                }
+            }),
+            // checks, via filesObs function, that a file with the expected name exists
+            switchMap(_filePath => filesObs(dirPath)),
+            tap(filePath => {
+                if (filePath !== fullFileName) {
+                    console.error('filePath', filePath);
+                    console.error('fullFileName', fullFileName);
+                    return done(new Error('write file failed'));
+                }
+            }),
+            // removes the directory used for the test
+            switchMap(_data => deleteDirObs(dirPath))
+        )
         .subscribe(
             null,
             err => {
@@ -131,24 +131,26 @@ describe('makeDirObs function', () => {
     it('tries to create a directory first and then the same directory - at the end it deletes the directory', done => {
         const dirName = 'another new dir';
         makeDirObs(dirName)
-        // checks that the data received is equal to the name of the directory created
-        .do(data => {
-            const expectedDirPath = process.cwd() + '/' + dirName;
-            if (data !== expectedDirPath) {
-                console.error('expectedData', expectedDirPath);
-                console.error('data', data);
-                throw Error('data not as expected ');
-            }
-        })
-        .switchMap(_data => makeDirObs(dirName))
-        // checks that the data received is null, since this signals that the directory we tried to create already existis
-        .do(data => {
-            if (data) {
-                console.error('expectedData', null);
-                console.error('data', data);
-                throw Error('data not as expected ');
-            }
-        })
+        .pipe(
+            // checks that the data received is equal to the name of the directory created
+            tap(data => {
+                const expectedDirPath = process.cwd() + '/' + dirName;
+                if (data !== expectedDirPath) {
+                    console.error('expectedData', expectedDirPath);
+                    console.error('data', data);
+                    throw Error('data not as expected ');
+                }
+            }),
+            switchMap(_data => makeDirObs(dirName)),
+            // checks that the data received is null, since this signals that the directory we tried to create already existis
+            tap(data => {
+                if (data) {
+                    console.error('expectedData', null);
+                    console.error('data', data);
+                    throw Error('data not as expected ');
+                }
+            })
+        )
         .subscribe(
             null,
             err => {
@@ -172,11 +174,13 @@ describe('appendFileObs function', () => {
         const line = 'I am a line';
         const linePlusReturn = line + '\n';
         appendFileObs(logFile, linePlusReturn)
-        .switchMap(data => {
-            // removes the last char which is carriage return - this should be the line appended
-            const lineEmitted = data.substr(0, data.length - 1);
-            return appendFileObs(logFile, lineEmitted);
-        })
+        .pipe(
+            switchMap(data => {
+                // removes the last char which is carriage return - this should be the line appended
+                const lineEmitted = data.substr(0, data.length - 1);
+                return appendFileObs(logFile, lineEmitted);
+            })
+        )
         .subscribe(
             undefined,
             err => {

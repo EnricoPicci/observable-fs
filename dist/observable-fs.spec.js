@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require("mocha");
-// import * as rimraf from 'rimraf';
 const _ = require("lodash");
-require("rxjs/add/operator/do");
+const operators_1 = require("rxjs/operators");
 const observable_fs_1 = require("./observable-fs");
 const observable_fs_2 = require("./observable-fs");
 const observable_fs_3 = require("./observable-fs");
@@ -51,23 +50,27 @@ describe('writeFileObs function', () => {
         ];
         // delete the target directory if it exists
         observable_fs_1.deleteDirObs(dirPath)
-            .switchMap(deletedDir => observable_fs_1.writeFileObs(deletedDir + fileName, content))
-            .do(data => {
+            .pipe(
+        // writes the file and then runs the checks
+        operators_1.switchMap(deletedDir => observable_fs_1.writeFileObs(deletedDir + fileName, content)), 
+        // checks that the file name is emitted
+        operators_1.tap(data => {
             if (fullFileName !== data) {
                 console.error('data emitted', data);
                 console.error('fullFileName', dirPath + fileName);
                 return done(new Error('data emitted by write failed'));
             }
-        })
-            .switchMap(_filePath => observable_fs_1.filesObs(dirPath))
-            .do(filePath => {
+        }), 
+        // checks, via filesObs function, that a file with the expected name exists
+        operators_1.switchMap(_filePath => observable_fs_1.filesObs(dirPath)), operators_1.tap(filePath => {
             if (filePath !== fullFileName) {
                 console.error('filePath', filePath);
                 console.error('fullFileName', fullFileName);
                 return done(new Error('write file failed'));
             }
-        })
-            .switchMap(_data => observable_fs_1.deleteDirObs(dirPath))
+        }), 
+        // removes the directory used for the test
+        operators_1.switchMap(_data => observable_fs_1.deleteDirObs(dirPath)))
             .subscribe(null, err => {
             observable_fs_1.deleteDirObs(dirPath).subscribe();
             done(err);
@@ -93,22 +96,24 @@ describe('makeDirObs function', () => {
     it('tries to create a directory first and then the same directory - at the end it deletes the directory', done => {
         const dirName = 'another new dir';
         observable_fs_1.makeDirObs(dirName)
-            .do(data => {
+            .pipe(
+        // checks that the data received is equal to the name of the directory created
+        operators_1.tap(data => {
             const expectedDirPath = process.cwd() + '/' + dirName;
             if (data !== expectedDirPath) {
                 console.error('expectedData', expectedDirPath);
                 console.error('data', data);
                 throw Error('data not as expected ');
             }
-        })
-            .switchMap(_data => observable_fs_1.makeDirObs(dirName))
-            .do(data => {
+        }), operators_1.switchMap(_data => observable_fs_1.makeDirObs(dirName)), 
+        // checks that the data received is null, since this signals that the directory we tried to create already existis
+        operators_1.tap(data => {
             if (data) {
                 console.error('expectedData', null);
                 console.error('data', data);
                 throw Error('data not as expected ');
             }
-        })
+        }))
             .subscribe(null, err => {
             observable_fs_1.deleteDirObs(dirName).subscribe();
             done(err);
@@ -124,11 +129,11 @@ describe('appendFileObs function', () => {
         const line = 'I am a line';
         const linePlusReturn = line + '\n';
         observable_fs_2.appendFileObs(logFile, linePlusReturn)
-            .switchMap(data => {
+            .pipe(operators_1.switchMap(data => {
             // removes the last char which is carriage return - this should be the line appended
             const lineEmitted = data.substr(0, data.length - 1);
             return observable_fs_2.appendFileObs(logFile, lineEmitted);
-        })
+        }))
             .subscribe(undefined, err => {
             console.error('ERROR', err);
             done(err);

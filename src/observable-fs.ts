@@ -1,11 +1,8 @@
 
-import { Observable } from 'rxjs/Observable';
-import { Observer} from 'rxjs/Observer';
-import {TeardownLogic} from 'rxjs/Subscription';
-import 'rxjs/add/observable/bindNodeCallback';
-import 'rxjs/add/observable/bindCallback';
-import 'rxjs/add/observable/from';
-import 'rxjs/add/operator/switchMap';
+import { Observable, bindCallback, bindNodeCallback, from } from 'rxjs';
+import { Observer} from 'rxjs';
+import {TeardownLogic} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import * as fs from 'fs';
 import * as readline from 'readline';
@@ -16,7 +13,7 @@ import * as rimraf from 'rimraf';
 
 // =============================  Read a file line by line and emits when completed =========================================
 // returns and Observable which emits an array containing the lines of the file as strings
-export const readLinesObs = Observable.bindCallback(_readLines);
+export const readLinesObs = bindCallback(_readLines);
 function _readLines(filePath: string, callback: (lines: Array<string>) => void) {
     const lines = new Array<string>();
     const rl = readline.createInterface({
@@ -39,7 +36,7 @@ function _readLines(filePath: string, callback: (lines: Array<string>) => void) 
 export function writeFileObs(filePath: string, lines: Array<string>) {
     return _writeFileObs(filePath, lines);
 }
-const _writeFileObs = Observable.bindCallback(_writeFile);
+const _writeFileObs = bindCallback(_writeFile);
 function _writeFile(
     filePath: string,
     lines: Array<string>,
@@ -65,14 +62,16 @@ function _writeFile(
 export function fileListObs(fromDirPath: string) {
     return _fileListObs(fromDirPath);
 }
-const _fileListObs = Observable.bindNodeCallback(dir.files);
+const _fileListObs = bindNodeCallback(dir.files);
 
 
 // ============  Emits each name of the files present in a directory and subdirectories =========
 // returns and Observable which emits for each file found in the directory and all its subdirectories
 export function filesObs(fromDirPath: string) {
     return fileListObs(fromDirPath)
-            .switchMap(files => Observable.from(files));
+    .pipe(
+        switchMap(files => from(files))
+    )
 }
 
 // ============  Deletes a directory and subdirectories and emits when completed =========
@@ -96,7 +95,7 @@ export function deleteDirObs(dirPath: string): Observable<string> {
 export function makeDirObs(dirPath: string) {
     return _mkdirp(dirPath);
 }
-const _mkdirp = Observable.bindNodeCallback(mkdirp);
+const _mkdirp = bindNodeCallback(mkdirp);
 
 
 // ============  Appends a line to a file and emits when completed =========
@@ -109,7 +108,7 @@ function appendFileNode(filePath: string, line: string, cb: (err, data: string) 
         cb(err, line);
     });
 }
-const _appendFile = Observable.bindNodeCallback(appendFileNode);
+const _appendFile = bindNodeCallback(appendFileNode);
 
 // ============  Deletes a file and emits when completed =========
 // returns and Observable which emits the name of the file when the line has been deleted or an error otherwise
@@ -121,4 +120,4 @@ function deleteFileNode(filePath: string, cb: (err, data: string) => void) {
         cb(err, filePath);
     });
 }
-const _deleteFile = Observable.bindNodeCallback(deleteFileNode);
+const _deleteFile = bindNodeCallback(deleteFileNode);
