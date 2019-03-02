@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 
 import {switchMap, tap} from 'rxjs/operators';
 
-import {readLinesObs, writeFileObs, filesObs, makeDirObs, deleteDirObs} from './observable-fs';
+import {readLinesObs, writeFileObs, filesObs, makeDirObs, deleteDirObs, readLineObs} from './observable-fs';
 import {appendFileObs} from './observable-fs';
 import {deleteFileObs} from './observable-fs';
 
@@ -52,6 +52,32 @@ describe('readLinesObs function', () => {
                 console.error('ERROR', err);
             },
             () => console.log('COMPLETED')
+        );
+
+    });
+
+});
+
+describe('readLineObs function', () => {
+    
+    it('reads each line of a file', done => {
+        let lineCounter = 0;
+
+        const filePath = 'observable-fs-test-dir/dir-2/file-2-1.txt';
+        readLineObs(filePath)
+        .subscribe(
+            () => lineCounter++,
+            err => {
+                console.error('ERROR', err);
+            },
+            () => {
+                if (lineCounter !== 5) {
+                    console.error('Number of lines read not as expected', filePath, lineCounter);
+                    return done(new Error('readLineObs failed'));
+                }
+                console.log('COMPLETED');
+                done();
+            }
         );
 
     });

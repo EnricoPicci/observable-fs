@@ -23,6 +23,22 @@ function _readLines(filePath, callback) {
         callback(lines);
     });
 }
+// =============================  Read a file line by line and emits for each line =========================================
+// returns and Observable which emits each line of the file read
+exports.readLineObs = (filePath) => {
+    return rxjs_1.Observable.create((observer) => {
+        const rl = readline.createInterface({
+            input: fs.createReadStream(filePath),
+            crlfDelay: Infinity
+        });
+        rl.on('line', (line) => {
+            observer.next(line);
+        });
+        rl.on('close', () => {
+            observer.complete();
+        });
+    });
+};
 // ======================  Writes an array of strings as lines in a file and emits when completed =========================
 // Writes a file whose content is represented by an array of strings.
 // Each string is a line of the file.

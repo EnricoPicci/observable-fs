@@ -39,6 +39,23 @@ describe('readLinesObs function', () => {
         }, () => console.log('COMPLETED'));
     });
 });
+describe('readLineObs function', () => {
+    it('reads each line of a file', done => {
+        let lineCounter = 0;
+        const filePath = 'observable-fs-test-dir/dir-2/file-2-1.txt';
+        observable_fs_1.readLineObs(filePath)
+            .subscribe(() => lineCounter++, err => {
+            console.error('ERROR', err);
+        }, () => {
+            if (lineCounter !== 5) {
+                console.error('Number of lines read not as expected', filePath, lineCounter);
+                return done(new Error('readLineObs failed'));
+            }
+            console.log('COMPLETED');
+            done();
+        });
+    });
+});
 describe('writeFileObs function', () => {
     it('writes a file with a certain content', done => {
         const dirPath = 'observable-fs-test-dir-output/';

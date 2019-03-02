@@ -1,5 +1,6 @@
 
 import {readLinesObs} from './observable-fs';
+import {readLineObs} from './observable-fs';
 import {writeFileObs} from './observable-fs';
 import {filesObs} from './observable-fs';
 import {makeDirObs} from './observable-fs';
@@ -8,6 +9,7 @@ import {appendFileObs} from './observable-fs';
 import {deleteFileObs} from './observable-fs';
 
 export {readLinesObs};
+export {readLineObs};
 export {writeFileObs};
 export {filesObs};
 export {makeDirObs};

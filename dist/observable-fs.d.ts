@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 export declare const readLinesObs: (arg1: string) => Observable<string[]>;
+export declare const readLineObs: (filePath: string) => any;
 export declare function writeFileObs(filePath: string, lines: Array<string>): Observable<string>;
 export declare function fileListObs(fromDirPath: string): Observable<string[]>;
 export declare function filesObs(fromDirPath: string): Observable<string>;
