@@ -31,7 +31,7 @@ function _readLines(filePath: string, callback: (lines: Array<string>) => void) 
 
 // =============================  Read a file line by line and emits for each line =========================================
 // returns and Observable which emits each line of the file read
-export const readLineObs = (filePath: string) => {
+export const readLineObs = (filePath: string) : Observable<string> => {
     return Observable.create((observer: Observer<string>): TeardownLogic => {
         const rl = readline.createInterface({
             input: fs.createReadStream(filePath),
