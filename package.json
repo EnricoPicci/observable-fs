@@ -1,11 +1,11 @@
 {
   "name": "observable-fs",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Provides as Observables some of the APIs of node fs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test-mocha": "mocha -r ts-node/register --require source-map-support/register --recursive src/**/*.spec.ts ",
+    "test-mocha": "mocha -r ts-node/register --require source-map-support/register --recursive src/*.spec.ts ",
     "tsc": "tsc",
     "test": "npm run tsc  && nyc npm run test-mocha",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
@@ -58,13 +58,13 @@
     "nyc": "^11.4.1",
     "source-map-support": "^0.5.3",
     "ts-node": "^5.0.1",
-    "typescript": "^2.7.2"
+    "typescript": "^3.3.3333"
   },
   "dependencies": {
     "lodash": "^4.17.5",
     "mkdirp": "^0.5.1",
     "node-dir": "^0.1.17",
     "rimraf": "^2.6.2",
-    "rxjs": "^6.3.3"
+    "rxjs": "^6.4.0"
   }
 }
