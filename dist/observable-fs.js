@@ -7,6 +7,7 @@ const readline = require("readline");
 const mkdirp = require("mkdirp");
 const dir = require("node-dir");
 const rimraf = require("rimraf");
+const fs_1 = require("fs");
 // =============================  Read a file line by line and emits when completed =========================================
 // returns and Observable which emits an array containing the lines of the file as strings
 exports.readLinesObs = rxjs_1.bindCallback(_readLines);
@@ -16,10 +17,10 @@ function _readLines(filePath, callback) {
         input: fs.createReadStream(filePath),
         crlfDelay: Infinity
     });
-    rl.on('line', (line) => {
+    rl.on("line", (line) => {
         lines.push(line);
     });
-    rl.on('close', () => {
+    rl.on("close", () => {
         callback(lines);
     });
 }
@@ -31,10 +32,10 @@ exports.readLineObs = (filePath) => {
             input: fs.createReadStream(filePath),
             crlfDelay: Infinity
         });
-        rl.on('line', (line) => {
+        rl.on("line", (line) => {
             observer.next(line);
         });
-        rl.on('close', () => {
+        rl.on("close", () => {
             observer.complete();
         });
     });
@@ -50,14 +51,14 @@ function writeFileObs(filePath, lines) {
 exports.writeFileObs = writeFileObs;
 const _writeFileObs = rxjs_1.bindCallback(_writeFile);
 function _writeFile(filePath, lines, callback) {
-    const lastSlash = filePath.lastIndexOf('/');
+    const lastSlash = filePath.lastIndexOf("/");
     const fileDir = filePath.substr(0, lastSlash + 1);
     mkdirp(fileDir, err => {
         if (err) {
-            console.error('error in creating a directory', err);
+            console.error("error in creating a directory", err);
             throw err;
         }
-        const fileContent = lines.join('\n');
+        const fileContent = lines.join("\n");
         fs.writeFile(filePath, fileContent, err => {
             if (err)
                 throw err;
@@ -75,10 +76,25 @@ const _fileListObs = rxjs_1.bindNodeCallback(dir.files);
 // ============  Emits each name of the files present in a directory and subdirectories =========
 // returns and Observable which emits for each file found in the directory and all its subdirectories
 function filesObs(fromDirPath) {
-    return fileListObs(fromDirPath)
-        .pipe(operators_1.switchMap(files => rxjs_1.from(files)));
+    return fileListObs(fromDirPath).pipe(operators_1.switchMap(files => rxjs_1.from(files)));
 }
 exports.filesObs = filesObs;
+// ============  Emits the list of names of directories present in a directory =========
+// returns and Observable which emits the list of names of directories found in the directory passed in as input
+function dirNamesListObs(fromDirPath) {
+    return new rxjs_1.Observable((observer) => {
+        fs_1.readdir(fromDirPath, { withFileTypes: true }, (err, files) => {
+            if (err) {
+                observer.error(err);
+                return;
+            }
+            const dirs = files.filter(f => f.isDirectory()).map(d => d.name);
+            observer.next(dirs);
+            observer.complete();
+        });
+    });
+}
+exports.dirNamesListObs = dirNamesListObs;
 // ============  Deletes a directory and subdirectories and emits when completed =========
 // returns and Observable which emits null when the directory and all its subdirectories have been deleted or an error otherwise
 // export function deleteDirObs(dirPath: string) {
@@ -87,7 +103,7 @@ exports.filesObs = filesObs;
 // const _rimraf = Observable.bindCallback(rimraf);
 function deleteDirObs(dirPath) {
     return rxjs_1.Observable.create((observer) => {
-        rimraf(dirPath, (err) => {
+        rimraf(dirPath, err => {
             if (err)
                 observer.error(err);
             observer.next(dirPath);
