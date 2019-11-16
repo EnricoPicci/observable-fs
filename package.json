@@ -8,7 +8,11 @@
     "test-mocha": "mocha -r ts-node/register --require source-map-support/register --recursive src/*.spec.ts ",
     "tsc": "tsc",
     "test": "npm run tsc  && nyc npm run test-mocha",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "prepublishOnly": "npm version patch",
+    "preversion": "npm test",
+    "version": "npm run tsc && git add -A dist",
+    "postversion": "git push"
   },
   "nyc": {
     "extension": [
@@ -48,7 +52,7 @@
     "@types/lodash": "^4.14.104",
     "@types/mkdirp": "^0.5.2",
     "@types/mocha": "^2.2.48",
-    "@types/node": "^9.4.6",
+    "@types/node": "^12.12.8",
     "@types/node-dir": "0.0.32",
     "@types/rimraf": "^2.0.2",
     "chai": "^4.1.2",
@@ -61,7 +65,7 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "mkdirp": "^0.5.1",
     "node-dir": "^0.1.17",
     "rimraf": "^2.6.2",

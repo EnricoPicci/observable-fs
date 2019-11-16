@@ -1,18 +1,21 @@
+import { readLinesObs } from "./observable-fs";
+import { readLineObs } from "./observable-fs";
+import { writeFileObs } from "./observable-fs";
+import { filesObs } from "./observable-fs";
+import { fileListObs } from "./observable-fs";
+import { makeDirObs } from "./observable-fs";
+import { deleteDirObs } from "./observable-fs";
+import { appendFileObs } from "./observable-fs";
+import { deleteFileObs } from "./observable-fs";
+import { dirNamesListObs } from "./observable-fs";
 
-import {readLinesObs} from './observable-fs';
-import {readLineObs} from './observable-fs';
-import {writeFileObs} from './observable-fs';
-import {filesObs} from './observable-fs';
-import {makeDirObs} from './observable-fs';
-import {deleteDirObs} from './observable-fs';
-import {appendFileObs} from './observable-fs';
-import {deleteFileObs} from './observable-fs';
-
-export {readLinesObs};
-export {readLineObs};
-export {writeFileObs};
-export {filesObs};
-export {makeDirObs};
-export {deleteDirObs};
-export {appendFileObs};
-export {deleteFileObs};
+export { readLinesObs };
+export { readLineObs };
+export { writeFileObs };
+export { filesObs };
+export { fileListObs };
+export { makeDirObs };
+export { deleteDirObs };
+export { appendFileObs };
+export { deleteFileObs };
+export { dirNamesListObs };
