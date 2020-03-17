@@ -15,12 +15,12 @@ function _readLines(filePath, callback) {
     const lines = new Array();
     const rl = readline.createInterface({
         input: fs.createReadStream(filePath),
-        crlfDelay: Infinity
+        crlfDelay: Infinity,
     });
-    rl.on("line", (line) => {
+    rl.on('line', (line) => {
         lines.push(line);
     });
-    rl.on("close", () => {
+    rl.on('close', () => {
         callback(lines);
     });
 }
@@ -30,12 +30,12 @@ exports.readLineObs = (filePath) => {
     return rxjs_1.Observable.create((observer) => {
         const rl = readline.createInterface({
             input: fs.createReadStream(filePath),
-            crlfDelay: Infinity
+            crlfDelay: Infinity,
         });
-        rl.on("line", (line) => {
+        rl.on('line', (line) => {
             observer.next(line);
         });
-        rl.on("close", () => {
+        rl.on('close', () => {
             observer.complete();
         });
     });
@@ -45,27 +45,28 @@ exports.readLineObs = (filePath) => {
 // Each string is a line of the file.
 // If the directory is not present, is created
 // Returns an Observable which emits the name of the file written when the write operation is completed
+// export function writeFileObs(filePath: string, lines: Array<string>) {
+//     return _writeFileObs(filePath, lines);
+// }
 function writeFileObs(filePath, lines) {
-    return _writeFileObs(filePath, lines);
-}
-exports.writeFileObs = writeFileObs;
-const _writeFileObs = rxjs_1.bindCallback(_writeFile);
-function _writeFile(filePath, lines, callback) {
-    const lastSlash = filePath.lastIndexOf("/");
-    const fileDir = filePath.substr(0, lastSlash + 1);
-    mkdirp(fileDir, err => {
-        if (err) {
-            console.error("error in creating a directory", err);
-            throw err;
-        }
-        const fileContent = lines.join("\n");
-        fs.writeFile(filePath, fileContent, err => {
-            if (err)
-                throw err;
-            callback(filePath);
+    return new rxjs_1.Observable((subscriber) => {
+        const lastSlash = filePath.lastIndexOf('/');
+        const fileDir = filePath.substr(0, lastSlash + 1);
+        mkdirp(fileDir).then(() => {
+            const fileContent = lines.join('\n');
+            fs.writeFile(filePath, fileContent, err => {
+                if (err) {
+                    subscriber.error(err);
+                }
+                subscriber.next(filePath);
+                subscriber.complete();
+            });
+        }, err => {
+            subscriber.error(err);
         });
     });
 }
+exports.writeFileObs = writeFileObs;
 // ============  Emits the list of names of the files present in a directory and subdirectories =========
 // returns and Observable which emits once with the list of files found in the directory and all its subdirectories
 function fileListObs(fromDirPath) {
@@ -115,10 +116,9 @@ exports.deleteDirObs = deleteDirObs;
 // ============  Creates a directory and emits when completed =========
 // returns and Observable which emits the name of the directory when the directory has been created or an error otherwise
 function makeDirObs(dirPath) {
-    return _mkdirp(dirPath);
+    return rxjs_1.from(mkdirp(dirPath));
 }
 exports.makeDirObs = makeDirObs;
-const _mkdirp = rxjs_1.bindNodeCallback(mkdirp);
 // ============  Appends a line to a file and emits when completed =========
 // returns and Observable which emits the line appended when the line has been appended or an error otherwise
 function appendFileObs(filePath, line) {
