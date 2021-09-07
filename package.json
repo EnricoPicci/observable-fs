@@ -12,7 +12,9 @@
         "prepublishOnly": "npm version patch",
         "preversion": "npm test",
         "version": "npm run tsc && git add -A dist",
-        "postversion": "git push"
+        "postversion": "git push",
+        "lint": "eslint src/**/*.ts",
+        "lint:fix": "eslint src/**/*.ts --fix"
     },
     "nyc": {
         "extension": [
@@ -55,10 +57,17 @@
         "@types/node": "^16.7.13",
         "@types/node-dir": "0.0.34",
         "@types/rimraf": "^3.0.2",
+        "@typescript-eslint/eslint-plugin": "^4.31.0",
+        "@typescript-eslint/parser": "^4.31.0",
         "chai": "^4.3.4",
         "coveralls": "^3.1.1",
+        "eslint": "^7.32.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-deprecation": "^1.2.1",
+        "eslint-plugin-prettier": "^4.0.0",
         "mocha": "^9.1.1",
         "nyc": "^15.1.0",
+        "prettier": "^2.3.2",
         "source-map-support": "^0.5.19",
         "ts-node": "^10.2.1",
         "typescript": "^4.4.2"

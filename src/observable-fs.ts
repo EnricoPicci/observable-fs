@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Observable, bindCallback, bindNodeCallback, from, Subscriber } from 'rxjs';
 import { Observer } from 'rxjs';
 import { TeardownLogic } from 'rxjs';
@@ -30,21 +31,19 @@ function _readLines(filePath: string, callback: (lines: Array<string>) => void) 
 // =============================  Read a file line by line and emits for each line =========================================
 // returns and Observable which emits each line of the file read
 export const readLineObs = (filePath: string): Observable<string> => {
-    return Observable.create(
-        (observer: Observer<string>): TeardownLogic => {
-            const rl = readline.createInterface({
-                input: fs.createReadStream(filePath),
-                crlfDelay: Infinity,
-            });
+    return new Observable((observer: Observer<string>): TeardownLogic => {
+        const rl = readline.createInterface({
+            input: fs.createReadStream(filePath),
+            crlfDelay: Infinity,
+        });
 
-            rl.on('line', (line: string) => {
-                observer.next(line);
-            });
-            rl.on('close', () => {
-                observer.complete();
-            });
-        },
-    );
+        rl.on('line', (line: string) => {
+            observer.next(line);
+        });
+        rl.on('close', () => {
+            observer.complete();
+        });
+    });
 };
 
 // ======================  Writes an array of strings as lines in a file and emits when completed =========================
@@ -56,27 +55,25 @@ export const readLineObs = (filePath: string): Observable<string> => {
 //     return _writeFileObs(filePath, lines);
 // }
 export function writeFileObs(filePath: string, lines: Array<string>) {
-    return new Observable(
-        (subscriber: Subscriber<any>): TeardownLogic => {
-            const lastSlash = filePath.lastIndexOf('/');
-            const fileDir = filePath.substr(0, lastSlash + 1);
-            mkdirp(fileDir).then(
-                () => {
-                    const fileContent = lines.join('\n');
-                    fs.writeFile(filePath, fileContent, err => {
-                        if (err) {
-                            subscriber.error(err);
-                        }
-                        subscriber.next(filePath);
-                        subscriber.complete();
-                    });
-                },
-                err => {
-                    subscriber.error(err);
-                },
-            );
-        },
-    );
+    return new Observable((subscriber: Subscriber<string>): TeardownLogic => {
+        const lastSlash = filePath.lastIndexOf('/');
+        const fileDir = filePath.substr(0, lastSlash + 1);
+        mkdirp(fileDir).then(
+            () => {
+                const fileContent = lines.join('\n');
+                fs.writeFile(filePath, fileContent, (err) => {
+                    if (err) {
+                        subscriber.error(err);
+                    }
+                    subscriber.next(filePath);
+                    subscriber.complete();
+                });
+            },
+            (err) => {
+                subscriber.error(err);
+            },
+        );
+    });
 }
 
 // ============  Emits the list of names of the files present in a directory and subdirectories =========
@@ -89,25 +86,23 @@ const _fileListObs = bindNodeCallback(dir.files);
 // ============  Emits each name of the files present in a directory and subdirectories =========
 // returns and Observable which emits for each file found in the directory and all its subdirectories
 export function filesObs(fromDirPath: string) {
-    return fileListObs(fromDirPath).pipe(switchMap(files => from(files)));
+    return fileListObs(fromDirPath).pipe(switchMap((files) => from(files)));
 }
 
 // ============  Emits the list of names of directories present in a directory =========
 // returns and Observable which emits the list of names of directories found in the directory passed in as input
 export function dirNamesListObs(fromDirPath: string) {
-    return new Observable(
-        (observer: Observer<string[]>): TeardownLogic => {
-            readdir(fromDirPath, { withFileTypes: true }, (err, files) => {
-                if (err) {
-                    observer.error(err);
-                    return;
-                }
-                const dirs = files.filter(f => f.isDirectory()).map(d => d.name);
-                observer.next(dirs);
-                observer.complete();
-            });
-        },
-    );
+    return new Observable((observer: Observer<string[]>): TeardownLogic => {
+        readdir(fromDirPath, { withFileTypes: true }, (err, files) => {
+            if (err) {
+                observer.error(err);
+                return;
+            }
+            const dirs = files.filter((f) => f.isDirectory()).map((d) => d.name);
+            observer.next(dirs);
+            observer.complete();
+        });
+    });
 }
 
 // ============  Deletes a directory and subdirectories and emits when completed =========
@@ -117,15 +112,13 @@ export function dirNamesListObs(fromDirPath: string) {
 // }
 // const _rimraf = Observable.bindCallback(rimraf);
 export function deleteDirObs(dirPath: string): Observable<string> {
-    return Observable.create(
-        (observer: Observer<string>): TeardownLogic => {
-            rimraf(dirPath, err => {
-                if (err) observer.error(err);
-                observer.next(dirPath);
-                observer.complete();
-            });
-        },
-    );
+    return new Observable((observer: Observer<string>): TeardownLogic => {
+        rimraf(dirPath, (err) => {
+            if (err) observer.error(err);
+            observer.next(dirPath);
+            observer.complete();
+        });
+    });
 }
 
 // ============  Creates a directory and emits when completed =========
@@ -140,7 +133,7 @@ export function appendFileObs(filePath: string, line: string) {
     return _appendFile(filePath, line);
 }
 function appendFileNode(filePath: string, line: string, cb: (err, data: string) => void) {
-    return fs.appendFile(filePath, line, err => {
+    return fs.appendFile(filePath, line, (err) => {
         cb(err, line);
     });
 }
@@ -152,7 +145,7 @@ export function deleteFileObs(filePath: string) {
     return _deleteFile(filePath);
 }
 function deleteFileNode(filePath: string, cb: (err, data: string) => void) {
-    return fs.unlink(filePath, err => {
+    return fs.unlink(filePath, (err) => {
         cb(err, filePath);
     });
 }
