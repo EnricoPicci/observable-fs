@@ -20,12 +20,12 @@ describe('filesObs function', () => {
     it('reads the files of a directory', done => {
         const files = new Array<string>();
         const dirPath = 'observable-fs-test-dir/';
-        filesObs(dirPath).subscribe(
-            file => files.push(file),
-            err => {
+        filesObs(dirPath).subscribe({
+            next: file => files.push(file),
+            error: err => {
                 console.error('ERROR', err);
             },
-            () => {
+            complete: () => {
                 console.log('files', files);
                 if (files.length !== 3) {
                     console.error(dirPath, files);
@@ -33,7 +33,7 @@ describe('filesObs function', () => {
                 }
                 return done();
             },
-        );
+    });
     });
 });
 

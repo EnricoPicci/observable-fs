@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.deleteFileObs = exports.appendFileObs = exports.makeDirObs = exports.deleteDirObs = exports.dirNamesListObs = exports.filesObs = exports.fileListObs = exports.writeFileObs = exports.readLineObs = exports.readLinesObs = void 0;
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const fs = require("fs");
@@ -10,7 +11,7 @@ const rimraf = require("rimraf");
 const fs_1 = require("fs");
 // =============================  Read a file line by line and emits when completed =========================================
 // returns and Observable which emits an array containing the lines of the file as strings
-exports.readLinesObs = rxjs_1.bindCallback(_readLines);
+exports.readLinesObs = (0, rxjs_1.bindCallback)(_readLines);
 function _readLines(filePath, callback) {
     const lines = new Array();
     const rl = readline.createInterface({
@@ -26,7 +27,7 @@ function _readLines(filePath, callback) {
 }
 // =============================  Read a file line by line and emits for each line =========================================
 // returns and Observable which emits each line of the file read
-exports.readLineObs = (filePath) => {
+const readLineObs = (filePath) => {
     return rxjs_1.Observable.create((observer) => {
         const rl = readline.createInterface({
             input: fs.createReadStream(filePath),
@@ -40,6 +41,7 @@ exports.readLineObs = (filePath) => {
         });
     });
 };
+exports.readLineObs = readLineObs;
 // ======================  Writes an array of strings as lines in a file and emits when completed =========================
 // Writes a file whose content is represented by an array of strings.
 // Each string is a line of the file.
@@ -73,18 +75,18 @@ function fileListObs(fromDirPath) {
     return _fileListObs(fromDirPath);
 }
 exports.fileListObs = fileListObs;
-const _fileListObs = rxjs_1.bindNodeCallback(dir.files);
+const _fileListObs = (0, rxjs_1.bindNodeCallback)(dir.files);
 // ============  Emits each name of the files present in a directory and subdirectories =========
 // returns and Observable which emits for each file found in the directory and all its subdirectories
 function filesObs(fromDirPath) {
-    return fileListObs(fromDirPath).pipe(operators_1.switchMap(files => rxjs_1.from(files)));
+    return fileListObs(fromDirPath).pipe((0, operators_1.switchMap)(files => (0, rxjs_1.from)(files)));
 }
 exports.filesObs = filesObs;
 // ============  Emits the list of names of directories present in a directory =========
 // returns and Observable which emits the list of names of directories found in the directory passed in as input
 function dirNamesListObs(fromDirPath) {
     return new rxjs_1.Observable((observer) => {
-        fs_1.readdir(fromDirPath, { withFileTypes: true }, (err, files) => {
+        (0, fs_1.readdir)(fromDirPath, { withFileTypes: true }, (err, files) => {
             if (err) {
                 observer.error(err);
                 return;
@@ -116,7 +118,7 @@ exports.deleteDirObs = deleteDirObs;
 // ============  Creates a directory and emits when completed =========
 // returns and Observable which emits the name of the directory when the directory has been created or an error otherwise
 function makeDirObs(dirPath) {
-    return rxjs_1.from(mkdirp(dirPath));
+    return (0, rxjs_1.from)(mkdirp(dirPath));
 }
 exports.makeDirObs = makeDirObs;
 // ============  Appends a line to a file and emits when completed =========
@@ -130,7 +132,7 @@ function appendFileNode(filePath, line, cb) {
         cb(err, line);
     });
 }
-const _appendFile = rxjs_1.bindNodeCallback(appendFileNode);
+const _appendFile = (0, rxjs_1.bindNodeCallback)(appendFileNode);
 // ============  Deletes a file and emits when completed =========
 // returns and Observable which emits the name of the file when the line has been deleted or an error otherwise
 function deleteFileObs(filePath) {
@@ -142,5 +144,5 @@ function deleteFileNode(filePath, cb) {
         cb(err, filePath);
     });
 }
-const _deleteFile = rxjs_1.bindNodeCallback(deleteFileNode);
+const _deleteFile = (0, rxjs_1.bindNodeCallback)(deleteFileNode);
 //# sourceMappingURL=observable-fs.js.map

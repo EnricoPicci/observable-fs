@@ -82,7 +82,7 @@ export function writeFileObs(filePath: string, lines: Array<string>) {
 // ============  Emits the list of names of the files present in a directory and subdirectories =========
 // returns and Observable which emits once with the list of files found in the directory and all its subdirectories
 export function fileListObs(fromDirPath: string) {
-    return _fileListObs(fromDirPath);
+    return _fileListObs(fromDirPath) as Observable<readonly string[]>;
 }
 const _fileListObs = bindNodeCallback(dir.files);
 
