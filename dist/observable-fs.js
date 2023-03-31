@@ -3,13 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteFileObs = exports.appendFileObs = exports.makeDirObs = exports.deleteDirObs = exports.dirNamesListObs = exports.filesObs = exports.fileListObs = exports.writeFileObs = exports.readLineObs = exports.readLinesObs = void 0;
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const rxjs_1 = require("rxjs");
-const operators_1 = require("rxjs/operators");
 const fs = require("fs");
 const readline = require("readline");
 const mkdirp = require("mkdirp");
-const dir = require("node-dir");
 const rimraf = require("rimraf");
 const fs_1 = require("fs");
+const path_1 = require("path");
 // =============================  Read a file line by line and emits when completed =========================================
 // returns and Observable which emits an array containing the lines of the file as strings
 exports.readLinesObs = (0, rxjs_1.bindCallback)(_readLines);
@@ -54,7 +53,7 @@ exports.readLineObs = readLineObs;
 function writeFileObs(filePath, lines) {
     return new rxjs_1.Observable((subscriber) => {
         const lastSlash = filePath.lastIndexOf('/');
-        const fileDir = filePath.substr(0, lastSlash + 1);
+        const fileDir = filePath.substring(0, lastSlash + 1);
         mkdirp(fileDir).then(() => {
             const fileContent = lines.join('\n');
             fs.writeFile(filePath, fileContent, (err) => {
@@ -71,16 +70,27 @@ function writeFileObs(filePath, lines) {
 }
 exports.writeFileObs = writeFileObs;
 // ============  Emits the list of names of the files present in a directory and subdirectories =========
-// returns and Observable which emits once with the list of files found in the directory and all its subdirectories
+// returns an Observable that noticies the list of files found in the directory and all its subdirectories
 function fileListObs(fromDirPath) {
-    return _fileListObs(fromDirPath);
+    return new rxjs_1.Observable((observer) => {
+        const files = _readdirRecursiveSync(fromDirPath);
+        observer.next(files);
+        observer.complete();
+    });
 }
 exports.fileListObs = fileListObs;
-const _fileListObs = (0, rxjs_1.bindNodeCallback)(dir.files);
+function _readdirRecursiveSync(dir) {
+    const dirs = (0, fs_1.readdirSync)(dir, { withFileTypes: true });
+    const files = dirs.reduce((acc, file) => {
+        const filePath = (0, path_1.join)(dir, file.name);
+        return acc.concat(file.isDirectory() ? _readdirRecursiveSync(filePath) : filePath);
+    }, []);
+    return files;
+}
 // ============  Emits each name of the files present in a directory and subdirectories =========
-// returns and Observable which emits for each file found in the directory and all its subdirectories
+// returns and Observable notifies each file found in the directory and all its subdirectories
 function filesObs(fromDirPath) {
-    return fileListObs(fromDirPath).pipe((0, operators_1.switchMap)((files) => (0, rxjs_1.from)(files)));
+    return fileListObs(fromDirPath).pipe((0, rxjs_1.concatMap)((files) => (0, rxjs_1.from)(files)));
 }
 exports.filesObs = filesObs;
 // ============  Emits the list of names of directories present in a directory =========

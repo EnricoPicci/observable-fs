@@ -204,7 +204,7 @@ describe('appendFileObs function', () => {
             .pipe(
                 switchMap((data) => {
                     // removes the last char which is carriage return - this should be the line appended
-                    const lineEmitted = data.substr(0, data.length - 1);
+                    const lineEmitted = data.substring(0, data.length - 1);
                     return appendFileObs(logFile, lineEmitted);
                 }),
             )
