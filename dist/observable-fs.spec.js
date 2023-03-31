@@ -26,24 +26,6 @@ describe('filesObs function', () => {
             },
         });
     });
-    it.only('reads the files of a directory', (done) => {
-        const files = new Array();
-        const dirPath = '~/enrico-code/my-npm-packages/observable-fs/observable-fs-test-dir';
-        (0, observable_fs_1.filesObs)(dirPath).subscribe({
-            next: (file) => files.push(file),
-            error: (err) => {
-                console.error('ERROR', err);
-            },
-            complete: () => {
-                console.log('files', files);
-                if (files.length !== 3) {
-                    console.error(dirPath, files);
-                    return done(new Error('files count failed'));
-                }
-                return done();
-            },
-        });
-    });
 });
 describe('dirNamesListObs function', () => {
     it('reads the subdirectories of a directory', (done) => {
@@ -200,7 +182,7 @@ describe('appendFileObs function', () => {
         (0, observable_fs_2.appendFileObs)(logFile, linePlusReturn)
             .pipe((0, operators_1.switchMap)((data) => {
             // removes the last char which is carriage return - this should be the line appended
-            const lineEmitted = data.substr(0, data.length - 1);
+            const lineEmitted = data.substring(0, data.length - 1);
             return (0, observable_fs_2.appendFileObs)(logFile, lineEmitted);
         }))
             .subscribe({
