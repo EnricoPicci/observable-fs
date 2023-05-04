@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteFileObs = exports.appendFileObs = exports.makeDirObs = exports.deleteDirObs = exports.dirNamesListObs = exports.filesObs = exports.fileListObs = exports.writeFileObs = exports.readLineObs = exports.readLinesObs = void 0;
+exports.deleteFileObs = exports.appendFileObs = exports.makeTempDirObs = exports.makeDirObs = exports.deleteDirObs = exports.dirNamesListObs = exports.filesObs = exports.fileListObs = exports.writeFileObs = exports.readLineObs = exports.readLinesObs = void 0;
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const rxjs_1 = require("rxjs");
 const fs = require("fs");
@@ -141,6 +141,13 @@ function makeDirObs(dirPath) {
     return (0, rxjs_1.from)(mkdirp(dirPath));
 }
 exports.makeDirObs = makeDirObs;
+// ============  Creates a temporary directory and emits when completed =========
+// returns and Observable which emits the name of the directory when the directory has been created or an error otherwise
+// the direectory needs to be deleted by the caller
+function makeTempDirObs(prefix) {
+    return (0, rxjs_1.bindNodeCallback)(fs_1.mkdtemp)(prefix);
+}
+exports.makeTempDirObs = makeTempDirObs;
 // ============  Appends a line to a file and emits when completed =========
 // returns and Observable which emits the line appended when the line has been appended or an error otherwise
 function appendFileObs(filePath, line) {

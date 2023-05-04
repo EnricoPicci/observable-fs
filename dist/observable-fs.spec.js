@@ -3,10 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("mocha");
 const chai_1 = require("chai");
 const _ = require("lodash");
-const operators_1 = require("rxjs/operators");
+const rxjs_1 = require("rxjs");
 const observable_fs_1 = require("./observable-fs");
 const observable_fs_2 = require("./observable-fs");
 const observable_fs_3 = require("./observable-fs");
+const path = require("path");
 describe('filesObs function', () => {
     it('reads the files of a directory', (done) => {
         const files = new Array();
@@ -94,9 +95,9 @@ describe('writeFileObs function', () => {
         (0, observable_fs_1.deleteDirObs)(dirPath)
             .pipe(
         // writes the file and then runs the checks
-        (0, operators_1.switchMap)((deletedDir) => (0, observable_fs_1.writeFileObs)(deletedDir + fileName, content)), 
+        (0, rxjs_1.switchMap)((deletedDir) => (0, observable_fs_1.writeFileObs)(deletedDir + fileName, content)), 
         // checks that the file name is emitted
-        (0, operators_1.tap)((data) => {
+        (0, rxjs_1.tap)((data) => {
             if (fullFileName !== data) {
                 console.error('data emitted', data);
                 console.error('fullFileName', dirPath + fileName);
@@ -104,7 +105,7 @@ describe('writeFileObs function', () => {
             }
         }), 
         // checks, via filesObs function, that a file with the expected name exists
-        (0, operators_1.switchMap)(() => (0, observable_fs_1.filesObs)(dirPath)), (0, operators_1.tap)((filePath) => {
+        (0, rxjs_1.switchMap)(() => (0, observable_fs_1.filesObs)(dirPath)), (0, rxjs_1.tap)((filePath) => {
             if (filePath !== fullFileName) {
                 console.error('filePath', filePath);
                 console.error('fullFileName', fullFileName);
@@ -112,7 +113,7 @@ describe('writeFileObs function', () => {
             }
         }), 
         // removes the directory used for the test
-        (0, operators_1.switchMap)(() => (0, observable_fs_1.deleteDirObs)(dirPath)))
+        (0, rxjs_1.switchMap)(() => (0, observable_fs_1.deleteDirObs)(dirPath)))
             .subscribe({
             error: (err) => {
                 (0, observable_fs_1.deleteDirObs)(dirPath).subscribe();
@@ -127,7 +128,7 @@ describe('makeDirObs function', () => {
         const dirName = 'new dir';
         (0, observable_fs_1.makeDirObs)(dirName).subscribe({
             next: (data) => {
-                const expectedData = process.cwd() + '/' + dirName;
+                const expectedData = path.join(process.cwd(), dirName);
                 if (data !== expectedData) {
                     console.error('expectedData', expectedData);
                     console.error('data', data);
@@ -146,16 +147,16 @@ describe('makeDirObs function', () => {
         (0, observable_fs_1.makeDirObs)(dirName)
             .pipe(
         // checks that the data received is equal to the name of the directory created
-        (0, operators_1.tap)((data) => {
-            const expectedDirPath = process.cwd() + '/' + dirName;
+        (0, rxjs_1.tap)((data) => {
+            const expectedDirPath = path.join(process.cwd(), dirName);
             if (data !== expectedDirPath) {
                 console.error('expectedData', expectedDirPath);
                 console.error('data', data);
                 throw Error('data not as expected ');
             }
-        }), (0, operators_1.switchMap)(() => (0, observable_fs_1.makeDirObs)(dirName)), 
+        }), (0, rxjs_1.switchMap)(() => (0, observable_fs_1.makeDirObs)(dirName)), 
         // checks that the data received is null, since this signals that the directory we tried to create already existis
-        (0, operators_1.tap)((data) => {
+        (0, rxjs_1.tap)((data) => {
             if (data) {
                 console.error('expectedData', null);
                 console.error('data', data);
@@ -174,13 +175,37 @@ describe('makeDirObs function', () => {
         });
     });
 });
+describe('makeTempDirObs function', () => {
+    it('tries to create a temp directory', (done) => {
+        const prefix = 'temp-prefix';
+        let _tempDirName;
+        (0, observable_fs_1.makeTempDirObs)(prefix)
+            .pipe((0, rxjs_1.tap)({
+            next: (tempDirName) => {
+                _tempDirName = tempDirName;
+                const gotPrefix = tempDirName.slice(0, prefix.length);
+                if (gotPrefix !== prefix) {
+                    console.error('expected prefix', prefix);
+                    console.error('got prefix', gotPrefix);
+                    return done(new Error('data not as expected '));
+                }
+            },
+        }), (0, rxjs_1.finalize)(() => (0, observable_fs_1.deleteDirObs)(_tempDirName)))
+            .subscribe({
+            error: (err) => console.error(err),
+            complete: () => {
+                done();
+            },
+        });
+    });
+});
 describe('appendFileObs function', () => {
     it('appends 2 lines to a file', (done) => {
         const logFile = 'log.txt';
         const line = 'I am a line';
         const linePlusReturn = line + '\n';
         (0, observable_fs_2.appendFileObs)(logFile, linePlusReturn)
-            .pipe((0, operators_1.switchMap)((data) => {
+            .pipe((0, rxjs_1.switchMap)((data) => {
             // removes the last char which is carriage return - this should be the line appended
             const lineEmitted = data.substring(0, data.length - 1);
             return (0, observable_fs_2.appendFileObs)(logFile, lineEmitted);

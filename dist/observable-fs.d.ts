@@ -7,5 +7,6 @@ export declare function filesObs(fromDirPath: string): Observable<string>;
 export declare function dirNamesListObs(fromDirPath: string): Observable<string[]>;
 export declare function deleteDirObs(dirPath: string): Observable<string>;
 export declare function makeDirObs(dirPath: string): Observable<string>;
+export declare function makeTempDirObs(prefix: string): Observable<string>;
 export declare function appendFileObs(filePath: string, line: string): Observable<string>;
 export declare function deleteFileObs(filePath: string): Observable<string>;

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dirNamesListObs = exports.deleteFileObs = exports.appendFileObs = exports.deleteDirObs = exports.makeDirObs = exports.fileListObs = exports.filesObs = exports.writeFileObs = exports.readLineObs = exports.readLinesObs = void 0;
+exports.dirNamesListObs = exports.deleteFileObs = exports.appendFileObs = exports.deleteDirObs = exports.makeDirObs = exports.fileListObs = exports.filesObs = exports.makeTempDirObs = exports.writeFileObs = exports.readLineObs = exports.readLinesObs = void 0;
 const observable_fs_1 = require("./observable-fs");
 Object.defineProperty(exports, "readLinesObs", { enumerable: true, get: function () { return observable_fs_1.readLinesObs; } });
 const observable_fs_2 = require("./observable-fs");
@@ -14,11 +14,13 @@ Object.defineProperty(exports, "fileListObs", { enumerable: true, get: function 
 const observable_fs_6 = require("./observable-fs");
 Object.defineProperty(exports, "makeDirObs", { enumerable: true, get: function () { return observable_fs_6.makeDirObs; } });
 const observable_fs_7 = require("./observable-fs");
-Object.defineProperty(exports, "deleteDirObs", { enumerable: true, get: function () { return observable_fs_7.deleteDirObs; } });
+Object.defineProperty(exports, "makeTempDirObs", { enumerable: true, get: function () { return observable_fs_7.makeTempDirObs; } });
 const observable_fs_8 = require("./observable-fs");
-Object.defineProperty(exports, "appendFileObs", { enumerable: true, get: function () { return observable_fs_8.appendFileObs; } });
+Object.defineProperty(exports, "deleteDirObs", { enumerable: true, get: function () { return observable_fs_8.deleteDirObs; } });
 const observable_fs_9 = require("./observable-fs");
-Object.defineProperty(exports, "deleteFileObs", { enumerable: true, get: function () { return observable_fs_9.deleteFileObs; } });
+Object.defineProperty(exports, "appendFileObs", { enumerable: true, get: function () { return observable_fs_9.appendFileObs; } });
 const observable_fs_10 = require("./observable-fs");
-Object.defineProperty(exports, "dirNamesListObs", { enumerable: true, get: function () { return observable_fs_10.dirNamesListObs; } });
+Object.defineProperty(exports, "deleteFileObs", { enumerable: true, get: function () { return observable_fs_10.deleteFileObs; } });
+const observable_fs_11 = require("./observable-fs");
+Object.defineProperty(exports, "dirNamesListObs", { enumerable: true, get: function () { return observable_fs_11.dirNamesListObs; } });
 //# sourceMappingURL=index.js.map

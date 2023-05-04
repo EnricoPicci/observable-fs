@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as readline from 'readline';
 import * as mkdirp from 'mkdirp';
 import * as rimraf from 'rimraf';
-import { readdir, readdirSync } from 'fs';
+import { mkdtemp, readdir, readdirSync } from 'fs';
 import { join } from 'path';
 import { normalizeTilde } from './path';
 
@@ -144,6 +144,13 @@ export function deleteDirObs(dirPath: string): Observable<string> {
 export function makeDirObs(dirPath: string) {
     dirPath = normalizeTilde(dirPath);
     return from(mkdirp(dirPath));
+}
+
+// ============  Creates a temporary directory and emits when completed =========
+// returns and Observable which emits the name of the directory when the directory has been created or an error otherwise
+// the direectory needs to be deleted by the caller
+export function makeTempDirObs(prefix: string) {
+    return bindNodeCallback(mkdtemp)(prefix);
 }
 
 // ============  Appends a line to a file and emits when completed =========

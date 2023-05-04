@@ -2,7 +2,7 @@ import 'mocha';
 import { expect } from 'chai';
 import * as _ from 'lodash';
 
-import { switchMap, tap } from 'rxjs/operators';
+import { finalize, switchMap, tap } from 'rxjs';
 
 import {
     readLinesObs,
@@ -12,9 +12,11 @@ import {
     deleteDirObs,
     readLineObs,
     dirNamesListObs,
+    makeTempDirObs,
 } from './observable-fs';
 import { appendFileObs } from './observable-fs';
 import { deleteFileObs } from './observable-fs';
+import path = require('path');
 
 describe('filesObs function', () => {
     it('reads the files of a directory', (done) => {
@@ -144,7 +146,7 @@ describe('makeDirObs function', () => {
         const dirName = 'new dir';
         makeDirObs(dirName).subscribe({
             next: (data) => {
-                const expectedData = process.cwd() + '/' + dirName;
+                const expectedData = path.join(process.cwd(), dirName);
                 if (data !== expectedData) {
                     console.error('expectedData', expectedData);
                     console.error('data', data);
@@ -165,7 +167,7 @@ describe('makeDirObs function', () => {
             .pipe(
                 // checks that the data received is equal to the name of the directory created
                 tap((data) => {
-                    const expectedDirPath = process.cwd() + '/' + dirName;
+                    const expectedDirPath = path.join(process.cwd(), dirName);
                     if (data !== expectedDirPath) {
                         console.error('expectedData', expectedDirPath);
                         console.error('data', data);
@@ -189,6 +191,34 @@ describe('makeDirObs function', () => {
                 },
                 complete: () => {
                     deleteDirObs(dirName).subscribe();
+                    done();
+                },
+            });
+    });
+});
+
+describe('makeTempDirObs function', () => {
+    it('tries to create a temp directory', (done) => {
+        const prefix = 'temp-prefix';
+        let _tempDirName: string;
+        makeTempDirObs(prefix)
+            .pipe(
+                tap({
+                    next: (tempDirName) => {
+                        _tempDirName = tempDirName;
+                        const gotPrefix = tempDirName.slice(0, prefix.length);
+                        if (gotPrefix !== prefix) {
+                            console.error('expected prefix', prefix);
+                            console.error('got prefix', gotPrefix);
+                            return done(new Error('data not as expected '));
+                        }
+                    },
+                }),
+                finalize(() => deleteDirObs(_tempDirName)),
+            )
+            .subscribe({
+                error: (err) => console.error(err),
+                complete: () => {
                     done();
                 },
             });
