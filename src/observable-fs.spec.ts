@@ -2,7 +2,7 @@ import 'mocha';
 import { expect } from 'chai';
 import * as _ from 'lodash';
 
-import { finalize, switchMap, tap } from 'rxjs';
+import { concatMap, switchMap, tap } from 'rxjs';
 
 import {
     readLinesObs,
@@ -199,13 +199,11 @@ describe('makeDirObs function', () => {
 
 describe('makeTempDirObs function', () => {
     it('tries to create a temp directory', (done) => {
-        const prefix = 'temp-prefix';
-        let _tempDirName: string;
+        const prefix = 'temp-prefix-';
         makeTempDirObs(prefix)
             .pipe(
                 tap({
                     next: (tempDirName) => {
-                        _tempDirName = tempDirName;
                         const gotPrefix = tempDirName.slice(0, prefix.length);
                         if (gotPrefix !== prefix) {
                             console.error('expected prefix', prefix);
@@ -214,7 +212,9 @@ describe('makeTempDirObs function', () => {
                         }
                     },
                 }),
-                finalize(() => deleteDirObs(_tempDirName)),
+                concatMap((tempDirName) => {
+                    return deleteDirObs(tempDirName);
+                }),
             )
             .subscribe({
                 error: (err) => console.error(err),

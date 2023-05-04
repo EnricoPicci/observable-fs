@@ -177,12 +177,10 @@ describe('makeDirObs function', () => {
 });
 describe('makeTempDirObs function', () => {
     it('tries to create a temp directory', (done) => {
-        const prefix = 'temp-prefix';
-        let _tempDirName;
+        const prefix = 'temp-prefix-';
         (0, observable_fs_1.makeTempDirObs)(prefix)
             .pipe((0, rxjs_1.tap)({
             next: (tempDirName) => {
-                _tempDirName = tempDirName;
                 const gotPrefix = tempDirName.slice(0, prefix.length);
                 if (gotPrefix !== prefix) {
                     console.error('expected prefix', prefix);
@@ -190,7 +188,9 @@ describe('makeTempDirObs function', () => {
                     return done(new Error('data not as expected '));
                 }
             },
-        }), (0, rxjs_1.finalize)(() => (0, observable_fs_1.deleteDirObs)(_tempDirName)))
+        }), (0, rxjs_1.concatMap)((tempDirName) => {
+            return (0, observable_fs_1.deleteDirObs)(tempDirName);
+        }))
             .subscribe({
             error: (err) => console.error(err),
             complete: () => {
