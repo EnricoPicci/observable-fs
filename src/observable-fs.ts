@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { Observable, bindCallback, bindNodeCallback, from, Subscriber, concatMap } from 'rxjs';
+import { Observable, bindNodeCallback, from, Subscriber, concatMap } from 'rxjs';
 import { Observer } from 'rxjs';
 import { TeardownLogic } from 'rxjs';
 
@@ -13,8 +13,11 @@ import { normalizeTilde } from './path';
 
 // =============================  Read a file line by line and emits when completed =========================================
 // returns and Observable which emits an array containing the lines of the file as strings
-export const readLinesObs = bindCallback(_readLines);
-function _readLines(filePath: string, callback: (lines: Array<string>) => void) {
+export const readLinesObs = bindNodeCallback(_readLines);
+function _readLines(
+    filePath: string,
+    callback: (err: NodeJS.ErrnoException | null, lines: Array<string> | null) => void,
+) {
     filePath = normalizeTilde(filePath);
     const lines = new Array<string>();
     const rl = readline.createInterface({
@@ -25,7 +28,10 @@ function _readLines(filePath: string, callback: (lines: Array<string>) => void) 
         lines.push(line);
     });
     rl.on('close', () => {
-        callback(lines);
+        callback(null, lines);
+    });
+    rl.on('error', (err) => {
+        callback(err, null);
     });
 }
 
