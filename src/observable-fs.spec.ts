@@ -29,7 +29,7 @@ describe('filesObs function', () => {
             },
             complete: () => {
                 console.log('files', files);
-                if (files.length !== 3) {
+                if (files.length !== 4) {
                     console.error(dirPath, files);
                     return done(new Error('files count failed'));
                 }
@@ -86,6 +86,20 @@ describe('readLinesObs function', () => {
             },
             complete: () => {
                 done(new Error('not expected to complete but to error since the file does not exist'));
+            },
+        });
+    });
+    it('reads an empty file', (done) => {
+        const filePath = 'observable-fs-test-dir/empty-file.txt';
+        readLinesObs(filePath).subscribe({
+            next: (lines) => {
+                expect(lines.length).to.equal(0);
+            },
+            error: (err) => {
+                done(err);
+            },
+            complete: () => {
+                done();
             },
         });
     });
