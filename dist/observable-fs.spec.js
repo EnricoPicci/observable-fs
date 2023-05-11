@@ -51,17 +51,30 @@ describe('readLinesObs function', () => {
         const filePath = 'observable-fs-test-dir/dir-2/file-2-1.txt';
         (0, observable_fs_1.readLinesObs)(filePath).subscribe({
             next: (lines) => {
+                (0, chai_1.expect)(lines.length).to.equal(5);
                 console.log('lines', lines);
-                if (lines.length !== 5) {
-                    console.error(filePath, lines);
-                    return done(new Error('lines count failed'));
-                }
                 return done();
             },
             error: (err) => {
-                console.error('ERROR', err);
+                throw err;
             },
             complete: () => console.log('COMPLETED'),
+        });
+    });
+    it('try to read all the lines of a file that does not exist', (done) => {
+        const filePath = 'not-existing-file.txt';
+        (0, observable_fs_1.readLinesObs)(filePath).subscribe({
+            next: (lines) => {
+                console.error('lines are not expected since the file does not exist', lines);
+                done(new Error('lines are not expected since the file does not exist'));
+            },
+            error: (err) => {
+                (0, chai_1.expect)(err.code).to.equal('ENOENT');
+                done();
+            },
+            complete: () => {
+                done(new Error('not expected to complete but to error since the file does not exist'));
+            },
         });
     });
 });

@@ -12,7 +12,7 @@ const path_1 = require("path");
 const path_2 = require("./path");
 // =============================  Read a file line by line and emits when completed =========================================
 // returns and Observable which emits an array containing the lines of the file as strings
-exports.readLinesObs = (0, rxjs_1.bindCallback)(_readLines);
+exports.readLinesObs = (0, rxjs_1.bindNodeCallback)(_readLines);
 function _readLines(filePath, callback) {
     filePath = (0, path_2.normalizeTilde)(filePath);
     const lines = new Array();
@@ -24,7 +24,10 @@ function _readLines(filePath, callback) {
         lines.push(line);
     });
     rl.on('close', () => {
-        callback(lines);
+        callback(null, lines);
+    });
+    rl.on('error', (err) => {
+        callback(err, null);
     });
 }
 // =============================  Read a file line by line and emits for each line =========================================
