@@ -18,11 +18,7 @@ describe('filesObs function', () => {
                 console.error('ERROR', err);
             },
             complete: () => {
-                console.log('files', files);
-                if (files.length !== 3) {
-                    console.error(dirPath, files);
-                    return done(new Error('files count failed'));
-                }
+                (0, chai_1.expect)(files.length).to.equal(5);
                 return done();
             },
         });
@@ -77,6 +73,20 @@ describe('readLinesObs function', () => {
             },
         });
     });
+    it('reads an empty file', (done) => {
+        const filePath = 'observable-fs-test-dir/empty-file.txt';
+        (0, observable_fs_1.readLinesObs)(filePath).subscribe({
+            next: (lines) => {
+                (0, chai_1.expect)(lines.length).to.equal(0);
+            },
+            error: (err) => {
+                done(err);
+            },
+            complete: () => {
+                done();
+            },
+        });
+    });
 });
 describe('readLineObs function', () => {
     it('reads each line of a file', (done) => {
@@ -94,6 +104,22 @@ describe('readLineObs function', () => {
                 }
                 console.log('COMPLETED');
                 done();
+            },
+        });
+    });
+    it('try to read lines of a file that does not exist', (done) => {
+        const filePath = 'not-existing-file.txt';
+        (0, observable_fs_1.readLineObs)(filePath).subscribe({
+            next: (lines) => {
+                console.error('lines are not expected since the file does not exist', lines);
+                done(new Error('lines are not expected since the file does not exist'));
+            },
+            error: (err) => {
+                (0, chai_1.expect)(err.code).to.equal('ENOENT');
+                done();
+            },
+            complete: () => {
+                done(new Error('not expected to complete but to error since the file does not exist'));
             },
         });
     });

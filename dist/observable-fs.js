@@ -42,6 +42,9 @@ const readLineObs = (filePath) => {
         rl.on('line', (line) => {
             observer.next(line);
         });
+        rl.on('error', (err) => {
+            observer.error(err);
+        });
         rl.on('close', () => {
             observer.complete();
         });
