@@ -28,11 +28,7 @@ describe('filesObs function', () => {
                 console.error('ERROR', err);
             },
             complete: () => {
-                console.log('files', files);
-                if (files.length !== 4) {
-                    console.error(dirPath, files);
-                    return done(new Error('files count failed'));
-                }
+                expect(files.length).to.equal(5);
                 return done();
             },
         });
@@ -122,6 +118,22 @@ describe('readLineObs function', () => {
                 }
                 console.log('COMPLETED');
                 done();
+            },
+        });
+    });
+    it('try to read lines of a file that does not exist', (done) => {
+        const filePath = 'not-existing-file.txt';
+        readLineObs(filePath).subscribe({
+            next: (lines) => {
+                console.error('lines are not expected since the file does not exist', lines);
+                done(new Error('lines are not expected since the file does not exist'));
+            },
+            error: (err) => {
+                expect(err.code).to.equal('ENOENT');
+                done();
+            },
+            complete: () => {
+                done(new Error('not expected to complete but to error since the file does not exist'));
             },
         });
     });

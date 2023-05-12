@@ -48,6 +48,9 @@ export const readLineObs = (filePath: string): Observable<string> => {
         rl.on('line', (line: string) => {
             observer.next(line);
         });
+        rl.on('error', (err) => {
+            observer.error(err);
+        });
         rl.on('close', () => {
             observer.complete();
         });
