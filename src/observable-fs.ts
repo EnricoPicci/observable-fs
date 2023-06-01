@@ -10,6 +10,8 @@ import * as rimraf from 'rimraf';
 import { mkdtemp, readdir, readdirSync } from 'fs';
 import { join } from 'path';
 import { normalizeTilde } from './path';
+import path = require('path');
+import { checkForMinimalNodeVersion } from './check-node-version';
 
 // =============================  Read a file line by line and emits when completed =========================================
 // returns and Observable which emits an array containing the lines of the file as strings
@@ -18,6 +20,7 @@ function _readLines(
     filePath: string,
     callback: (err: NodeJS.ErrnoException | null, lines: Array<string> | null) => void,
 ) {
+    checkForMinimalNodeVersion('v16.0.0');
     filePath = normalizeTilde(filePath);
     const lines = new Array<string>();
     const rl = readline.createInterface({
@@ -38,6 +41,7 @@ function _readLines(
 // =============================  Read a file line by line and emits for each line =========================================
 // returns and Observable which emits each line of the file read
 export const readLineObs = (filePath: string): Observable<string> => {
+    checkForMinimalNodeVersion('v16.0.0');
     filePath = normalizeTilde(filePath);
     return new Observable((observer: Observer<string>): TeardownLogic => {
         const rl = readline.createInterface({
@@ -68,8 +72,7 @@ export const readLineObs = (filePath: string): Observable<string> => {
 export function writeFileObs(filePath: string, lines: Array<string>) {
     filePath = normalizeTilde(filePath);
     return new Observable((subscriber: Subscriber<string>): TeardownLogic => {
-        const lastSlash = filePath.lastIndexOf('/');
-        const fileDir = filePath.substring(0, lastSlash + 1);
+        const fileDir = path.dirname(filePath);
         mkdirp(fileDir).then(
             () => {
                 const fileContent = lines.join('\n');

@@ -10,10 +10,13 @@ const rimraf = require("rimraf");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const path_2 = require("./path");
+const path = require("path");
+const check_node_version_1 = require("./check-node-version");
 // =============================  Read a file line by line and emits when completed =========================================
 // returns and Observable which emits an array containing the lines of the file as strings
 exports.readLinesObs = (0, rxjs_1.bindNodeCallback)(_readLines);
 function _readLines(filePath, callback) {
+    (0, check_node_version_1.checkForMinimalNodeVersion)('v16.0.0');
     filePath = (0, path_2.normalizeTilde)(filePath);
     const lines = new Array();
     const rl = readline.createInterface({
@@ -33,6 +36,7 @@ function _readLines(filePath, callback) {
 // =============================  Read a file line by line and emits for each line =========================================
 // returns and Observable which emits each line of the file read
 const readLineObs = (filePath) => {
+    (0, check_node_version_1.checkForMinimalNodeVersion)('v16.0.0');
     filePath = (0, path_2.normalizeTilde)(filePath);
     return new rxjs_1.Observable((observer) => {
         const rl = readline.createInterface({
@@ -62,8 +66,7 @@ exports.readLineObs = readLineObs;
 function writeFileObs(filePath, lines) {
     filePath = (0, path_2.normalizeTilde)(filePath);
     return new rxjs_1.Observable((subscriber) => {
-        const lastSlash = filePath.lastIndexOf('/');
-        const fileDir = filePath.substring(0, lastSlash + 1);
+        const fileDir = path.dirname(filePath);
         mkdirp(fileDir).then(() => {
             const fileContent = lines.join('\n');
             fs.writeFile(filePath, fileContent, (err) => {

@@ -18,7 +18,7 @@ describe('filesObs function', () => {
                 console.error('ERROR', err);
             },
             complete: () => {
-                (0, chai_1.expect)(files.length).to.equal(5);
+                (0, chai_1.expect)(files.filter((f) => f !== 'observable-fs-test-dir/.DS_Store').length).to.equal(4);
                 return done();
             },
         });
