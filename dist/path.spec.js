@@ -8,13 +8,13 @@ const path = require("path");
 describe('normalizeTilde function', () => {
     it('substitutes the tilde (~) symbol with the home directory', () => {
         const dirName = path.join('~', 'aDirPath', 'aSubDirPath');
-        const expectedNormalizedPath = `${(0, os_1.homedir)()}/aDirPath/aSubDirPath`;
+        const expectedNormalizedPath = path.join((0, os_1.homedir)(), 'aDirPath', 'aSubDirPath');
         const normalizedPath = (0, path_1.normalizeTilde)(dirName);
         (0, chai_1.expect)(normalizedPath).equal(expectedNormalizedPath);
     });
     it('substitutes the tilde (~) symbol with the home directory - works also with a trailing slash', () => {
         const dirName = path.join('~', 'aDirPath', 'aSubDirPath', '/');
-        const expectedNormalizedPath = `${(0, os_1.homedir)()}/aDirPath/aSubDirPath/`;
+        const expectedNormalizedPath = path.join((0, os_1.homedir)(), 'aDirPath', 'aSubDirPath', '/');
         const normalizedPath = (0, path_1.normalizeTilde)(dirName);
         (0, chai_1.expect)(normalizedPath).equal(expectedNormalizedPath);
     });

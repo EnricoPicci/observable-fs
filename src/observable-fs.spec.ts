@@ -143,13 +143,13 @@ describe('writeFileObs function', () => {
     it('writes a file with a certain content', (done) => {
         const dirPath = 'observable-fs-test-dir-output/';
         const fileName = 'file-w.txt';
-        const fullFileName = dirPath + fileName;
+        const fullFileName = path.join(dirPath, fileName);
         const content = ['first line', 'second line'];
         // delete the target directory if it exists
         deleteDirObs(dirPath)
             .pipe(
                 // writes the file and then runs the checks
-                switchMap((deletedDir) => writeFileObs(deletedDir + fileName, content)),
+                switchMap((deletedDir) => writeFileObs(path.join(deletedDir, fileName), content)),
                 // checks that the file name is emitted
                 tap((data) => {
                     if (fullFileName !== data) {
